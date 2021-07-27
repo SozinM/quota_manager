@@ -1,11 +1,16 @@
-from django.contrib.auth.models import User, Group
-from rest_framework import viewsets
-from rest_framework import permissions
-from api.serializers import UserSerializer, GroupSerializer, QuotaSerializer, ResourceSerializer
+from django.contrib.auth.models import User
+from rest_framework import viewsets, permissions, mixins, status
+from rest_framework.response import Response
+from api.serializers import UserSerializer, QuotaSerializer, ResourceSerializer
 from api.models import Quota, Resource
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(mixins.CreateModelMixin,
+                  mixins.RetrieveModelMixin,
+                  mixins.UpdateModelMixin,
+                  mixins.DestroyModelMixin,
+                  mixins.ListModelMixin,
+                  viewsets.GenericViewSet):
     """
     API endpoint that allows users to be viewed or edited.
     """
@@ -14,10 +19,10 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
-class GroupViewSet(viewsets.ModelViewSet):
+class QuotaViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows quotas to be viewed or edited.
     """
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    queryset = Quota.objects.all()
+    serializer_class = QuotaSerializer
+    permission_classes = [permissions.IsAdminUser]

@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from api.models import Quota, Resource
 from rest_framework import serializers
 
@@ -6,22 +6,21 @@ from rest_framework import serializers
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
-        fields = ['url', 'username', 'email', 'groups']
+        fields = ['url', 'username', 'email']
+
+    def create(self, validated_data):
+        user = User.objects.create(**validated_data)
+        Quota.objects.create(user_id=user)
+        return user
 
 
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Group
-        fields = ['url', 'name']
-
-
-class QuotaSerializer(serializers.HyperlinkedModelSerializer):
+class QuotaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quota
         fields = ['quota', 'user_id']
 
 
-class ResourceSerializer(serializers.HyperlinkedModelSerializer):
+class ResourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resource
-        fields = ['resource']
+        fields = ['resource', 'user_id']
