@@ -19,6 +19,12 @@ class QuotaSerializer(serializers.ModelSerializer):
         model = Quota
         fields = ['id', 'quota']
 
+    def validate_quota(self, value):
+        if value < -1:
+            raise serializers.ValidationError("Incorrect quota value. "
+                                              "Quota must be:\n"
+                                              "-1 for restricted, 0 for unlimited or up to integer max for limited")
+
 
 class ResourceSerializer(serializers.ModelSerializer):
     class Meta:
