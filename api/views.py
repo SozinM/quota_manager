@@ -19,7 +19,10 @@ class UserViewSet(mixins.CreateModelMixin,
     permission_classes = [permissions.IsAuthenticated]
 
 
-class QuotaViewSet(viewsets.ModelViewSet):
+class QuotaViewSet(mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.ListModelMixin,
+                   viewsets.GenericViewSet):
     """
     API endpoint that allows quotas to be viewed or edited.
     """

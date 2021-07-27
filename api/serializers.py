@@ -10,14 +10,14 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
     def create(self, validated_data):
         user = User.objects.create(**validated_data)
-        Quota.objects.create(user_id=user)
+        Quota.objects.create(id=user)
         return user
 
 
 class QuotaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quota
-        fields = ['quota', 'user_id']
+        fields = ['id', 'quota']
 
 
 class ResourceSerializer(serializers.ModelSerializer):
