@@ -3,6 +3,13 @@ from django.contrib.auth.models import User
 
 
 class Quota(models.Model):
+    """
+    Model that represents quota.
+    values of the quota:
+    -1 - admin prohibits users from creating any resources
+    0 - user could create unlimited resources
+    >1 - user could create limited resources
+    """
     id = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     quota = models.IntegerField(default=0)
 
