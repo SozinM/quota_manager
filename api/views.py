@@ -29,3 +29,12 @@ class QuotaViewSet(mixins.RetrieveModelMixin,
     queryset = Quota.objects.all()
     serializer_class = QuotaSerializer
     permission_classes = [permissions.IsAdminUser]
+
+
+class ResourceViewSet(mixins.CreateModelMixin,
+                      mixins.RetrieveModelMixin,
+                      mixins.DestroyModelMixin,
+                      mixins.ListModelMixin,
+                      viewsets.GenericViewSet):
+    queryset = Quota.objects.all()
+    serializer_class = ResourceSerializer

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Quota(models.Model):
@@ -11,7 +12,8 @@ class Quota(models.Model):
     >1 - user could create limited resources
     """
     id = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    quota = models.IntegerField(default=0)
+    # 2^63-1 maximum integer in sqlite
+    quota = models.IntegerField(default=0, validators=[MinValueValidator(-1), MaxValueValidator(pow(2, 63) - 1)])
 
 
 class Resource(models.Model):
