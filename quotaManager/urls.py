@@ -5,11 +5,13 @@ from rest_framework_simplejwt import views as jwt_views
 
 
 router = routers.DefaultRouter()
-router.register(r'users', views.UserCreateViewSet)
+router.register(r'register', views.UserCreateViewSet)
+router.register(r'users', views.UserEditViewSet, basename="^users/$")
+router.register(r'resources', views.ResourceViewSet, basename="resource/$")
 router.register(r'admin/users', views.UserAdminViewSet)
-router.register(r'users/<int:pk>', views.UserEditViewSet, basename="^users/{pk}/$")
 router.register(r'admin/quotas', views.QuotaViewSet)
-router.register(r'resources', views.ResourceViewSet, basename="^resource/$")
+router.register(r'admin/resources', views.ResourceAdminViewSet)
+
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

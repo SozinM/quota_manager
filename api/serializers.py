@@ -24,3 +24,4 @@ class ResourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resource
         fields = ['resource', 'user_id']
+

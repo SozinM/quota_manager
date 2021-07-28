@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
-from rest_framework import viewsets, permissions, mixins, generics
+from rest_framework import viewsets, permissions, mixins, status
+from rest_framework.response import Response
 from api.serializers import UserSerializer, QuotaSerializer, ResourceSerializer
 from api.models import Quota, Resource, QuotaUser
 
@@ -26,6 +27,7 @@ class UserAdminViewSet(viewsets.ModelViewSet):
 class UserEditViewSet(mixins.RetrieveModelMixin,
                       mixins.UpdateModelMixin,
                       mixins.DestroyModelMixin,
+                      mixins.ListModelMixin,
                       viewsets.GenericViewSet):
     """
     API endpoint that allows users to be viewed or edited.
@@ -34,7 +36,7 @@ class UserEditViewSet(mixins.RetrieveModelMixin,
     serializer_class = UserSerializer
 
     def get_queryset(self):
-        return QuotaUser.objects.filter(username=self.request.user)
+        return QuotaUser.objects.filter(id=self.request.user.id)
 
 
 class QuotaViewSet(mixins.RetrieveModelMixin,
@@ -54,4 +56,17 @@ class ResourceViewSet(viewsets.ModelViewSet):
     serializer_class = ResourceSerializer
 
     def get_queryset(self):
-        return Resource.objects.filter(user_id=self.request.user)
+        return Resource.objects.filter(user_id=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data={**request.data, 'user_id': request.user.id})
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class ResourceAdminViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAdminUser]
+    serializer_class = ResourceSerializer
+    queryset = Resource.objects.all()
