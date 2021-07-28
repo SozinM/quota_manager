@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
 
 
 class QuotaUser(AbstractUser):
@@ -11,7 +9,7 @@ class QuotaUser(AbstractUser):
     """
     email = models.EmailField(unique=True)
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['username']
 
 
 class Quota(models.Model):
@@ -34,12 +32,3 @@ class Resource(models.Model):
     """
     resource = models.CharField(max_length=256, unique=True)
     user_id = models.ForeignKey(QuotaUser, on_delete=models.CASCADE)
-
-    def clean(self):
-        quota_object = Quota.objects.filter(id=self.user_id)
-        if not quota_object.allowed:
-            raise ValidationError(_("User is prohibited from creating resources by Admin"))
-        if quota_object.quota:
-            if Resource.objects.filter(user_id=self.user_id).count() >= quota_object.quota:
-                raise ValidationError(_("User's quota exceeded"))
-
