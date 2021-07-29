@@ -32,3 +32,6 @@ class Resource(models.Model):
     """
     resource = models.CharField(max_length=256, unique=True)
     user_id = models.ForeignKey(QuotaUser, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.resource
