@@ -44,8 +44,10 @@ class UserTests(TestCase):
         request = client.get('/resources/', format='json')
         self.assertTrue(request.data[0]['resource'] == 'test_1_resource')
         request = client.put('/resources/1/', {'resource': "test_2_resource"}, format='json')
-        print(request.status_code == 200)
-        print(Resource.objects.all().last())
+        self.assertTrue(request.status_code == 200)
+        request = client.delete('/resources/1/', format='json')
+        self.assertTrue(request.status_code == 204)
+        self.assertFalse(Resource.objects.all())
 
     def test_resource_create(self):
         client = APIClient()
