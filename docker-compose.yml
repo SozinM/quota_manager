@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8080
+    volumes:
+      - .:/code
+      - ./db.sqlite:/var/lib/sqlite/data
+    ports:
+      - "8080:8080"
