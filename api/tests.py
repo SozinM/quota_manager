@@ -5,13 +5,24 @@ from api.models import Quota, QuotaUser, Resource
 
 class AdminTests(TestCase):
     def setUp(self) -> None:
-        self.settings()
+        self.user = QuotaUser.objects.create_user(username="test", email="test@test.com", password="password")
+        Quota.objects.create(id=self.user)
+
+        self.admin = QuotaUser.objects.create_superuser(username="admin", email="admin@admin.com", password="password")
+        Quota.objects.create(id=self.admin)
+
+    def admin_set_quota(self):
+        pass
+
+    def admin_resources_basic(self):
+        pass
+
+    def admin_user_basic(self):
         pass
 
 
 class UserTests(TestCase):
     def setUp(self) -> None:
-
         self.user = QuotaUser.objects.create_user(username="test", email="test@test.com", password="password")
         Quota.objects.create(id=self.user)
         self.quoted_user = QuotaUser.objects.create_user(username="quoted_user", email="quoted_user@test.com",
@@ -34,34 +45,46 @@ class UserTests(TestCase):
         self.assertTrue(Quota.objects.filter(id=user.last()))
 
     def test_user_login(self):
-        client = APIClient()
-        request = client.post('/login/',
-                              {'email': "test@test.com", 'password': "password"},
-                              format='json')
-        self.assertTrue(request.status_code == 200)
+        users_creds = ({'email': "test@test.com", 'password': "password"},
+                       {'email': "admin@admin.com", 'password': "password"})
+        for credentials in users_creds:
+            with self.subTest(f"Test auth for {credentials}"):
+                client = APIClient()
+                request = client.post('/login/',
+                                      credentials,
+                                      format='json')
+                self.assertTrue(request.status_code == 200)
 
     def test_resource_basics(self):
-        client = APIClient()
-        client.force_authenticate(self.user)
+        users = (self.admin, self.user)
 
-        request = client.post('/resources/', {'resource': "test_1_resource"}, format='json')
-        self.assertTrue(request.status_code == 201)
-        self.assertTrue(Resource.objects.filter(resource='test_1_resource').count() == 1)
+        for user in users:
+            with self.subTest(f"Test resources usage for user {user}"):
+                client = APIClient()
+                client.force_authenticate(user)
 
-        request = client.get('/resources/', format='json')
-        self.assertTrue(request.data[0]['resource'] == 'test_1_resource')
+                request = client.post('/resources/', {'resource': "test_1_resource"}, format='json')
+                self.assertTrue(request.status_code == 201)
+                resource = Resource.objects.filter(resource='test_1_resource').last()
+                self.assertTrue(resource)
 
-        request = client.put('/resources/1/', {'resource': "test_2_resource"}, format='json')
-        self.assertTrue(request.status_code == 200)
-        self.assertTrue(Resource.objects.filter(resource='test_2_resource').count() == 1)
+                request = client.get('/resources/', format='json')
+                self.assertTrue(request.data[0]['resource'] == 'test_1_resource')
 
-        request = client.patch('/resources/1/', {'resource': "test_3_resource"}, format='json')
-        self.assertTrue(request.status_code == 200)
-        self.assertTrue(Resource.objects.filter(resource='test_3_resource').count() == 1)
+                request = client.get(f'/resources/{resource.id}/', format='json')
+                self.assertTrue(request.data['resource'] == 'test_1_resource')
 
-        request = client.delete('/resources/1/', format='json')
-        self.assertTrue(request.status_code == 204)
-        self.assertFalse(Resource.objects.all())
+                request = client.put(f'/resources/{resource.id}/', {'resource': "test_2_resource"}, format='json')
+                self.assertTrue(request.status_code == 200)
+                self.assertTrue(Resource.objects.filter(resource='test_2_resource'))
+
+                request = client.patch(f'/resources/{resource.id}/', {'resource': "test_3_resource"}, format='json')
+                self.assertTrue(request.status_code == 200)
+                self.assertTrue(Resource.objects.filter(resource='test_3_resource'))
+
+                request = client.delete(f'/resources/{resource.id}/', format='json')
+                self.assertTrue(request.status_code == 204)
+                self.assertFalse(Resource.objects.all())
 
     def test_resource_quoted(self):
         client = APIClient()
@@ -69,7 +92,7 @@ class UserTests(TestCase):
 
         request = client.post('/resources/', {'resource': "test_1_resource"}, format='json')
         self.assertTrue(request.status_code == 201)
-        self.assertTrue(Resource.objects.filter(resource='test_1_resource').count() == 1)
+        self.assertTrue(Resource.objects.filter(resource='test_1_resource'))
 
         # test that user prohibited to create resources that exceeds quota
         request = client.post('/resources/', {'resource': "test_2_resource"}, format='json')
@@ -82,11 +105,11 @@ class UserTests(TestCase):
 
         request = client.put('/resources/1/', {'resource': "test_2_resource"}, format='json')
         self.assertTrue(request.status_code == 200)
-        self.assertTrue(Resource.objects.filter(resource='test_2_resource').count() == 1)
+        self.assertTrue(Resource.objects.filter(resource='test_2_resource'))
 
         request = client.patch('/resources/1/', {'resource': "test_3_resource"}, format='json')
         self.assertTrue(request.status_code == 200)
-        self.assertTrue(Resource.objects.filter(resource='test_3_resource').count() == 1)
+        self.assertTrue(Resource.objects.filter(resource='test_3_resource'))
 
         request = client.delete('/resources/1/', format='json')
         self.assertTrue(request.status_code == 204)
@@ -110,11 +133,11 @@ class UserTests(TestCase):
 
         request = client.put('/resources/1/', {'resource': "test_2_resource"}, format='json')
         self.assertTrue(request.status_code == 200)
-        self.assertTrue(Resource.objects.filter(resource='test_2_resource').count() == 1)
+        self.assertTrue(Resource.objects.filter(resource='test_2_resource'))
 
         request = client.patch('/resources/1/', {'resource': "test_3_resource"}, format='json')
         self.assertTrue(request.status_code == 200)
-        self.assertTrue(Resource.objects.filter(resource='test_3_resource').count() == 1)
+        self.assertTrue(Resource.objects.filter(resource='test_3_resource'))
 
         request = client.delete('/resources/1/', format='json')
         self.assertTrue(request.status_code == 204)
@@ -131,7 +154,18 @@ class UserTests(TestCase):
         self.assertTrue(request.status_code == 204)
         self.assertFalse(QuotaUser.objects.filter(id=self.user.id))
 
+    def test_cross_user_resources(self):
+        client = APIClient()
+        client2 = APIClient()
+        client.force_authenticate(self.user)
+        client2.force_authenticate(self.quoted_user)
 
+        request = client.post('/resources/', {'resource': "test_1_resource"}, format='json')
+        self.assertTrue(request.status_code == 201)
+        self.assertTrue(Resource.objects.filter(resource='test_1_resource'))
 
+        request = client2.get('/resources/1/', format='json')
+        self.assertTrue(request.status_code == 404)
 
-# Create your tests here.
+        request = client2.get('/resources/', format='json')
+        self.assertFalse(request.data)

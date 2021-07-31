@@ -24,11 +24,9 @@ class UserAdminViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
 
-class UserEditViewSet(mixins.RetrieveModelMixin,
-                      mixins.UpdateModelMixin,
-                      mixins.DestroyModelMixin,
-                      mixins.ListModelMixin,
-                      viewsets.GenericViewSet):
+class RetrieveDeleteUserViewSet(mixins.RetrieveModelMixin,
+                                mixins.DestroyModelMixin,
+                                viewsets.GenericViewSet):
     """
     API endpoint that allows users to be viewed or edited.
     """

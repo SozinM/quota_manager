@@ -22,7 +22,7 @@ schema_view = get_schema_view(
 
 router = routers.DefaultRouter()
 router.register(r'register', views.UserCreateViewSet)
-router.register(r'users', views.UserEditViewSet, basename="^users/$")
+router.register(r'users', views.RetrieveDeleteUserViewSet, basename="^users/$")
 router.register(r'resources', views.ResourceViewSet, basename="resource/$")
 router.register(r'admin/users', views.UserAdminViewSet)
 router.register(r'admin/quotas', views.QuotaViewSet)
