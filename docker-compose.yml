@@ -9,3 +9,11 @@ services:
       - ./db.sqlite:/var/lib/sqlite/data
     ports:
       - "8080:8080"
+
+  test:
+    build: .
+    command: python manage.py test
+    volumes:
+      - .:/code
+    ports:
+      - "8080:8080"
