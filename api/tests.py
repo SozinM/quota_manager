@@ -11,8 +11,15 @@ class AdminTests(TestCase):
         self.admin = QuotaUser.objects.create_superuser(username="admin", email="admin@admin.com", password="password")
         Quota.objects.create(id=self.admin)
 
-    def admin_set_quota(self):
-        pass
+    def test_admin_set_quota(self):
+        client = APIClient()
+        client.force_authenticate(self.admin)
+
+        request = client.get('/admin/quotas/', format='json')
+        self.assertTrue(request.status_code == 200)
+        # print(request.data)
+        # self.assertTrue(request.status_code == 200)
+
 
     def admin_resources_basic(self):
         pass
