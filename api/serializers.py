@@ -25,7 +25,7 @@ class ResourceSerializer(serializers.ModelSerializer):
         model = Resource
         fields = ['resource', 'user_id']
 
-    def validate(self, data):
+    def is_quota_suffice(self, data):
         quota_object = Quota.objects.filter(id=data['user_id']).first()
         if not quota_object.allowed:
             raise serializers.ValidationError(_("User is prohibited from creating resources by Admin"))

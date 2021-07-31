@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.db import transaction
 from rest_framework import viewsets, permissions, mixins, status
 from rest_framework.response import Response
 from api.serializers import UserSerializer, QuotaSerializer, ResourceSerializer
@@ -58,9 +58,13 @@ class ResourceViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Resource.objects.filter(user_id=self.request.user.id)
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
+        # add id from token to data for resource creation
         serializer = self.get_serializer(data={**request.data, 'user_id': request.user.id})
         serializer.is_valid(raise_exception=True)
+        # check that user have sufficient quota to create resource
+        serializer.is_quota_suffice(serializer.validated_data)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -68,6 +72,7 @@ class ResourceViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
+        # add id from token to data for resource creation
         serializer = self.get_serializer(instance, data={**request.data, 'user_id': request.user.id}, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
