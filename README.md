@@ -72,3 +72,5 @@ Swagger shows some endpoints (register, login) as locked behind auth, but in fac
 
 Swagger does not show all errors codes that api return due to specific of ModelViewSet and the library interactions
 
+Debug=True and unchanged django key - this task is for test purpose and designed to work in test enviroment
+
