@@ -15,11 +15,11 @@ class UserCreateViewSet(mixins.CreateModelMixin,
     serializer_class = UserSerializer
 
 
-class UserAdminViewSet(mixins.CreateModelMixin,
-                   mixins.RetrieveModelMixin,
-                   mixins.DestroyModelMixin,
-                   mixins.ListModelMixin,
-                   viewsets.GenericViewSet):
+class AdminUserViewSet(mixins.CreateModelMixin,
+                       mixins.RetrieveModelMixin,
+                       mixins.DestroyModelMixin,
+                       mixins.ListModelMixin,
+                       viewsets.GenericViewSet):
     """
     API endpoint that allows administrator to create, delete and list users
     """
@@ -41,10 +41,10 @@ class RetrieveDeleteUserViewSet(mixins.RetrieveModelMixin,
         return QuotaUser.objects.filter(id=self.request.user.id)
 
 
-class QuotaViewSet(mixins.RetrieveModelMixin,
-                   mixins.UpdateModelMixin,
-                   mixins.ListModelMixin,
-                   viewsets.GenericViewSet):
+class AdminQuotaViewSet(mixins.RetrieveModelMixin,
+                        mixins.UpdateModelMixin,
+                        mixins.ListModelMixin,
+                        viewsets.GenericViewSet):
     """
     API endpoint that allows admin to edit, list and retrieve user's quota
     """
@@ -53,7 +53,7 @@ class QuotaViewSet(mixins.RetrieveModelMixin,
     serializer_class = QuotaSerializer
 
 
-class ResourceViewSet(viewsets.ModelViewSet):
+class UserResourceViewSet(viewsets.ModelViewSet):
     """
     Endpoint that allows user to CRUD and list resources of this user
     On create this endpoint check that user's quota is sufficient and user allowed to create resources
@@ -91,7 +91,7 @@ class ResourceViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class ResourceAdminViewSet(viewsets.ModelViewSet):
+class AdminResourceViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows admin to CRUD and list resources of all users
     On create this endpoint ignores quota

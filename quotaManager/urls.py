@@ -23,10 +23,10 @@ schema_view = get_schema_view(
 router = routers.DefaultRouter()
 router.register(r'register', views.UserCreateViewSet)
 router.register(r'users', views.RetrieveDeleteUserViewSet, basename="^users/$")
-router.register(r'resources', views.ResourceViewSet, basename="resource/$")
-router.register(r'admin/users', views.UserAdminViewSet)
-router.register(r'admin/quotas', views.QuotaViewSet)
-router.register(r'admin/resources', views.ResourceAdminViewSet)
+router.register(r'resources', views.UserResourceViewSet, basename="resource/$")
+router.register(r'admin/users', views.AdminUserViewSet)
+router.register(r'admin/quotas', views.AdminQuotaViewSet)
+router.register(r'admin/resources', views.AdminResourceViewSet)
 
 
 # Wire up our API using automatic URL routing.

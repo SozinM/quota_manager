@@ -4,6 +4,10 @@ from api.models import Quota, QuotaUser, Resource
 
 
 class AdminTests(TestCase):
+    """
+    Test for admin api side
+    Excluding permission tests
+    """
     def setUp(self) -> None:
         self.user = QuotaUser.objects.create_user(username="test", email="test@test.com", password="password")
         Quota.objects.create(id=self.user)
@@ -111,9 +115,11 @@ class AdminTests(TestCase):
         self.assertFalse(QuotaUser.objects.filter(username='test3'))
 
 
-
-
 class UserTests(TestCase):
+    """
+    Test for user api side
+    Excluding permission tests
+    """
     def setUp(self) -> None:
         self.user = QuotaUser.objects.create_user(username="test", email="test@test.com", password="password")
         Quota.objects.create(id=self.user)
