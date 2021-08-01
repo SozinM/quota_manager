@@ -18,6 +18,8 @@ Api will be accessable on localhost:8000
 
 ## Endpoints
 
+###All endpoints support default error codes (404 for not found, 403 for auth error, etc.), also some endpoint provide additional errors as described below.
+
 ###/swagger
 Endpoint which contains all documentation to api
 
@@ -41,9 +43,9 @@ Allow user to CRUD resources which belongs to this user.
 
 On create operation checked if the quota suffice and user is allowed to create resources.
 
-If quota is depleted error message `"User's quota exceeded"` is received.
+If quota is depleted error message `code: 400, msg:"User's quota exceeded"` is received.
 
-If user is prohibited from resource creation error message `"User is prohibited from creating resources by Admin"` id received
+If user is prohibited from resource creation error message `code:400, msg:"User is prohibited from creating resources by Admin"` id received
 
 ###/users
 Allow user to view information about himself and to delete his account
