@@ -1,5 +1,5 @@
 from django.test import TestCase
-from rest_framework.test import APIClient, force_authenticate
+from rest_framework.test import APIClient
 from api.models import Quota, QuotaUser, Resource
 
 
@@ -17,15 +17,91 @@ class AdminTests(TestCase):
 
         request = client.get('/admin/quotas/', format='json')
         self.assertTrue(request.status_code == 200)
-        # print(request.data)
+        self.assertTrue(len(request.data) == 2)
+
+        request = client.put(f'/admin/quotas/{self.user.id}/', {'id': self.user.id, 'quota': f'{pow(2,63) -1}', 'allowed': 'true'},
+                             format='json')
+        quota = Quota.objects.filter(id=self.user).last()
+        self.assertTrue(request.status_code == 200)
+        self.assertTrue(request.data == {'id': self.user.id, 'quota': pow(2,63) -1, 'allowed': True})
+        self.assertTrue(quota.quota == pow(2,63) -1)
+        self.assertTrue(quota.allowed)
+
+        request = client.patch(f'/admin/quotas/{self.user.id}/', {'quota': '1', 'allowed': 'false'},
+                               format='json')
+        quota = Quota.objects.filter(id=self.user).last()
+        self.assertTrue(request.status_code == 200)
+        self.assertTrue(request.data == {'id': self.user.id, 'quota': 1, 'allowed': False})
+        self.assertTrue(quota.quota == 1)
+        self.assertFalse(quota.allowed)
+
+        request = client.patch(f'/admin/quotas/{self.user.id}/', {'quota': '-1', 'allowed': 'false'},
+                               format='json')
+        quota = Quota.objects.filter(id=self.user).last()
+        self.assertTrue(request.status_code == 400)
+        self.assertTrue(request.data['quota'][0].code == 'min_value')
+        # quota is unchanged
+        self.assertTrue(quota.quota == 1)
+        self.assertFalse(quota.allowed)
+
+        request = client.patch(f'/admin/quotas/{self.user.id}/', {'quota': f'{pow(2,63)}', 'allowed': 'false'},
+                               format='json')
+        quota = Quota.objects.filter(id=self.user).last()
+        self.assertTrue(request.status_code == 400)
+        self.assertTrue(request.data['quota'][0].code == 'max_value')
+        # quota is unchanged
+        self.assertTrue(quota.quota == 1)
+        self.assertFalse(quota.allowed)
+
+        request = client.patch(f'/admin/quotas/{self.user.id}/', {'quota': '1', 'allowed': 'not_bool'},
+                               format='json')
+        quota = Quota.objects.filter(id=self.user).last()
+        self.assertTrue(request.status_code == 400)
+        self.assertTrue(request.data['allowed'][0].code == 'invalid')
+        # quota is unchanged
+        self.assertTrue(quota.quota == 1)
+        self.assertFalse(quota.allowed)
+
         # self.assertTrue(request.status_code == 200)
 
+    def test_admin_resources_basic(self):
+        client = APIClient()
+        client.force_authenticate(self.admin)
 
-    def admin_resources_basic(self):
-        pass
+        user_res = Resource.objects.create(resource='1', user_id=self.user)
+        admin_res = Resource.objects.create(resource='2', user_id=self.admin)
 
-    def admin_user_basic(self):
-        pass
+        request = client.post('/admin/resources/', {'resource': '3', 'user_id': self.user.id}, format='json')
+        self.assertTrue(request.status_code == 201)
+        self.assertTrue(Resource.objects.filter(resource='3'))
+
+        request = client.get('/admin/resources/', format='json')
+        self.assertTrue(request.status_code == 200)
+        self.assertTrue(len(request.data) == Resource.objects.all().count())
+
+        request = client.delete(f'/admin/resources/{user_res.id}/', format='json')
+        self.assertTrue(request.status_code == 204)
+        self.assertFalse(Resource.objects.filter(id=user_res.id))
+
+    def test_admin_user_basic(self):
+        client = APIClient()
+        client.force_authenticate(self.admin)
+
+        request = client.get('/admin/users/', format='json')
+        self.assertTrue(request.status_code == 200)
+        self.assertTrue(len(request.data) == QuotaUser.objects.all().count())
+
+        request = client.post('/admin/users/', {'username': "test3", 'email': "test3@test.com", 'password': "password"},
+                              format='json')
+        self.assertTrue(request.status_code == 201)
+        test3 = QuotaUser.objects.filter(username='test3').last()
+        self.assertTrue(test3)
+
+        request = client.delete(f'/admin/users/{test3.id}/', format='json')
+        self.assertTrue(request.status_code == 204)
+        self.assertFalse(QuotaUser.objects.filter(username='test3'))
+
+
 
 
 class UserTests(TestCase):
