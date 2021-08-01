@@ -6,6 +6,7 @@ from rest_framework_simplejwt import views as jwt_views
 
 from api import views
 
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Quota Manager",
