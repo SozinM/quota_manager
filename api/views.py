@@ -1,10 +1,15 @@
 from django.db import transaction
+from django.utils.decorators import method_decorator
 from rest_framework import viewsets, permissions, mixins, status
 from rest_framework.response import Response
 from api.serializers import UserSerializer, QuotaSerializer, ResourceSerializer
 from api.models import Quota, Resource, QuotaUser
+from drf_yasg.utils import swagger_auto_schema
 
 
+@method_decorator(name='create', decorator=swagger_auto_schema(
+    operation_description="API endpoint that provides registration of the user", responses={400: "User already exist"}
+))
 class UserCreateViewSet(mixins.CreateModelMixin,
                         viewsets.GenericViewSet):
     """
@@ -53,6 +58,11 @@ class AdminQuotaViewSet(mixins.RetrieveModelMixin,
     serializer_class = QuotaSerializer
 
 
+@method_decorator(name='create', decorator=swagger_auto_schema(
+    operation_description="API endpoint that provides registration of the user",
+    responses={400: "User is prohibited from creating resources by Admin\n"
+                    "User's quota exceeded"}
+))
 class UserResourceViewSet(viewsets.ModelViewSet):
     """
     Endpoint that allows user to CRUD and list resources of this user
