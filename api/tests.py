@@ -79,6 +79,15 @@ class AdminTests(TestCase):
         self.assertTrue(request.status_code == 200)
         self.assertTrue(len(request.data) == Resource.objects.all().count())
 
+        request = client.put(f'/admin/resources/{user_res.id}/', {'id': user_res.id, 'resource': 'Putted resource',
+                                                                  'user_id': self.user.id}, format='json')
+        self.assertTrue(request.status_code == 200)
+        self.assertTrue(Resource.objects.filter(id=user_res.id).last().resource == "Putted resource")
+
+        request = client.patch(f'/admin/resources/{user_res.id}/', {'resource': 'Some res'}, format='json')
+        self.assertTrue(request.status_code == 200)
+        self.assertTrue(Resource.objects.filter(id=user_res.id).last().resource == "Some res")
+
         request = client.delete(f'/admin/resources/{user_res.id}/', format='json')
         self.assertTrue(request.status_code == 204)
         self.assertFalse(Resource.objects.filter(id=user_res.id))
