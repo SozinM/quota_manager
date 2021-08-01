@@ -6,7 +6,7 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
-      - ./db.sqlite:/var/lib/sqlite/data
+      - ./db.sqlite:/code/db.sqlite
     ports:
       - "8000:8000"
 
