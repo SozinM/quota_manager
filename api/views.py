@@ -8,16 +8,20 @@ from api.models import Quota, Resource, QuotaUser
 class UserCreateViewSet(mixins.CreateModelMixin,
                         viewsets.GenericViewSet):
     """
-    API endpoint that allows users to be viewed or edited.
+    API endpoint that provides registration of the user
     """
     permission_classes = [permissions.AllowAny]
     queryset = QuotaUser.objects.none()
     serializer_class = UserSerializer
 
 
-class UserAdminViewSet(viewsets.ModelViewSet):
+class UserAdminViewSet(mixins.CreateModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.ListModelMixin,
+                   viewsets.GenericViewSet):
     """
-    API endpoint that allows users to be viewed or edited.
+    API endpoint that allows administrator to create, delete and list users
     """
     permission_classes = [permissions.IsAdminUser]
     queryset = QuotaUser.objects.all().order_by('-date_joined')
@@ -28,7 +32,7 @@ class RetrieveDeleteUserViewSet(mixins.RetrieveModelMixin,
                                 mixins.DestroyModelMixin,
                                 viewsets.GenericViewSet):
     """
-    API endpoint that allows users to be viewed or edited.
+    API endpoint that allows users to view data of himself or delete himself.
     """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserSerializer
@@ -42,7 +46,7 @@ class QuotaViewSet(mixins.RetrieveModelMixin,
                    mixins.ListModelMixin,
                    viewsets.GenericViewSet):
     """
-    API endpoint that allows quotas to be viewed or edited.
+    API endpoint that allows admin to edit, list and retrieve user's quota
     """
     permission_classes = [permissions.IsAdminUser]
     queryset = Quota.objects.all()
@@ -50,6 +54,10 @@ class QuotaViewSet(mixins.RetrieveModelMixin,
 
 
 class ResourceViewSet(viewsets.ModelViewSet):
+    """
+    Endpoint that allows user to CRUD and list resources of this user
+    On create this endpoint check that user's quota is sufficient and user allowed to create resources
+    """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ResourceSerializer
 
@@ -84,6 +92,10 @@ class ResourceViewSet(viewsets.ModelViewSet):
 
 
 class ResourceAdminViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows admin to CRUD and list resources of all users
+    On create this endpoint ignores quota
+    """
     permission_classes = [permissions.IsAdminUser]
     serializer_class = ResourceSerializer
     queryset = Resource.objects.all()

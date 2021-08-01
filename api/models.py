@@ -5,20 +5,24 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 class QuotaUser(AbstractUser):
     """
-    Model for email auth based on AbstractUser
+    Model for email+password auth based on AbstractUser
     """
     email = models.EmailField(unique=True)
+    # email in username_field needed for the email authentification
     USERNAME_FIELD = 'email'
+    # username in required field needed to create superuser
     REQUIRED_FIELDS = ['username']
 
 
 class Quota(models.Model):
     """
     Model that represents quota.
-    values of the quota:
-    0 - user could create unlimited resources
-    >1 - user could create limited resources
-    allowed: True - user could create resources, False - user can't create resources
+    Values of the quota field:
+    0 - user could create unlimited resources,
+    >1 - user could create limited resources.
+    Values of the allowed field:
+    True - user could create resources,
+    False - user can't create resources.
     """
     id = models.OneToOneField(QuotaUser, on_delete=models.CASCADE, primary_key=True)
     # 2^63-1 maximum integer in sqlite
@@ -29,6 +33,7 @@ class Quota(models.Model):
 class Resource(models.Model):
     """
     Model that represents resource linked to user
+    Field that represents resource is unique
     """
     resource = models.CharField(max_length=256, unique=True)
     user_id = models.ForeignKey(QuotaUser, on_delete=models.CASCADE)
