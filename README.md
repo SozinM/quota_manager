@@ -10,10 +10,11 @@ TODO: Describe the installation process
 
 1. Clone repo on a server that will run API
 2. Make sure that docker is up to date
-3. Run `docker-compose run test` to run tests for api
-4. Run `docker-compose run api` to start api server
-   
-Api will be accesable on localhost:8000
+3. Run `docker-compose up test` to run tests for api
+4. Run `docker-compose up api` to start api server
+5. Enter the container`docker exec -it %(api_container_id) /bin/bash`
+6. Create superuser via `python manager.py createsuperuser` 
+Api will be accessable on localhost:8000
 
 ## Endpoints
 
